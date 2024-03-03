@@ -5,7 +5,6 @@ r = requests.get("https://playground.learnqa.ru/api/long_redirect", allow_redire
 first_response = r.history
 second_response = r
 
-
 # Подсчет количества редиректов от изначальной точки до итоговой
 print("Количество редиректов: ",sys.getrefcount(first_response))
 

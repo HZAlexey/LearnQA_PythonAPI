@@ -28,7 +28,7 @@ class TestHeader:
 
     response = requests.get("https://playground.learnqa.ru/api/homework_header")
     head = response.headers
-
+    print(head)
 
     @pytest.mark.parametrize('header', headers)
     def test_header(self, header):
