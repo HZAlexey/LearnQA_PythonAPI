@@ -1,6 +1,8 @@
+import allure
 import pytest
 import requests
 
+@allure.epic("Test User Agent")
 class TestUserAgent:
     value = [
         ("Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"),
@@ -9,7 +11,7 @@ class TestUserAgent:
         ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.100.0"),
         ("Mozilla/5.0 (iPad; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1")
     ]
-
+    @allure.link(name="Документация", url="https://gist.github.com/KotovVitaliy/138894aa5b6fa442163561b5db6e2e26")
     @pytest.mark.parametrize("value_user_agent", value)
     def test_user_agent(self, value_user_agent):
         url = "https://playground.learnqa.ru/ajax/api/user_agent_check"

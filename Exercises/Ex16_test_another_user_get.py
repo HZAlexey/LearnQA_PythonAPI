@@ -1,57 +1,60 @@
+from datetime import datetime
+
+import allure
+
 from lib.my_requests import MyRequests
 from lib.assertions import Assertions
 from lib.base_case import BaseCase
 
 class TestUserGet(BaseCase):
-    # Для начала регистрируем нового пользователя
+    # Для начала регистрируем двух пользователей
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_create_user_first(self):
-        data = self.prepare_registration_data()
+        random_part = datetime.now().strftime("%m%d%Y%H%M%S")
 
-        response = MyRequests.post("/user/", data=data)
+        data1 = self.prepare_registration_data()
+        data2 = self.prepare_registration_data(f"{random_part}@yandex.ru")
 
-        Assertions.assert_code_status(response, 200)
-        Assertions.assert_json_has_key(response, "id")
+        response1 = MyRequests.post("/user/", data=data1)
+        response2 = MyRequests.post("/user/", data=data2)
 
-        email = data["email"]
-        password = data["password"]
+        Assertions.assert_code_status(response1, 200)
+        Assertions.assert_json_has_key(response1, "id")
 
-        data = {
-            'email': email,
-            'password': password
+        Assertions.assert_code_status(response2, 200)
+        Assertions.assert_json_has_key(response2, "id")
+
+        email1 = data1["email"]
+        email2 = data2["email"]
+
+        password1 = data1["password"]
+        password2 = data2["password"]
+
+        val1 = {
+            'email': email1,
+            'password': password1
         }
-        response1 = MyRequests.post("/user/login", data=data) # Авторизуемся данным пользователем
 
-        self.user_id_from_auth_method1 = self.get_json_value(response1, "user_id") # получаем его id
-
-    # Регистрируем второго пользователя
-    def test_create_user_second(self):
-        data = self.prepare_registration_data()
-
-        response = MyRequests.post("/user/", data=data)
-
-        Assertions.assert_code_status(response, 200)
-        Assertions.assert_json_has_key(response, "id")
-
-        email = data["email"]
-        password = data["password"]
-
-        data = {
-            'email': email,
-            'password': password
+        val2 = {
+            'email': email2,
+            'password': password2
         }
-        response1 = MyRequests.post("/user/login", data=data) # Авторизуемся данным пользователем
 
-        auth_sid = self.get_cookie(response1, "auth_sid")
-        token = self.get_header(response1, "x-csrf-token")
-        user_id_from_auth_method2 = self.get_json_value(response1, "user_id")
+        response1 = MyRequests.post("/user/login", data=val1)  # Авторизуемся ПЕРВЫМ пользователем
+        response2 = MyRequests.post("/user/login", data=val2)  # Авторизуемся ВТОРЫМ пользователем
 
-        response2 = MyRequests.get(                               # Запрашиваем данные с другим ID
-            f"/user/{self.user_id_from_auth_method1}",
-            headers={"x-csrf-token": f"{token}"},
-            cookies={"auth_sid": f"{auth_sid}"}
+
+        user_id_from_auth_method1 = self.get_json_value(response1, "user_id")
+
+        auth_sid2 = self.get_cookie(response2, "auth_sid")
+        token2 = self.get_header(response2, "x-csrf-token")
+
+
+        response3 = MyRequests.get(
+            f"/user/{user_id_from_auth_method1}", # указываем id ПЕРВОГО пользователя
+            headers={"x-csrf-token": f"{token2}"}, # указываем token ВТОРОГО пользователя
+            cookies={"auth_sid": f"{auth_sid2}"} # указываем auth_sid ВТОРОГО пользователя
         )
 
-
-        print(response2.content)
-
-
+        Assertions.assert_json_has_not_key(response2, "username")
+        print(response3.text)

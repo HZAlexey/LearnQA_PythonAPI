@@ -2,7 +2,9 @@ from lib.base_case import BaseCase
 from lib.assertions import Assertions
 from lib.my_requests import MyRequests
 from datetime import datetime
+import allure
 
+@allure.epic("Delete user cases")
 class TestUserDelete(BaseCase):
     def setup_method(self):
         self.random_part = datetime.now().strftime("%m%d%Y%H%M%S")
@@ -20,6 +22,9 @@ class TestUserDelete(BaseCase):
             'password': self.data2["password"]
         }
     # Попытка удалить пользователя ID 2
+    @allure.feature("Негативные тесты")
+    @allure.description("This negative test of delete user by id = 2")
+    @allure.severity(allure.severity_level.TRIVIAL)
     def test_delete_user_negative(self):
         data = {
             'email': 'vinkotov@example.com',
@@ -46,6 +51,9 @@ class TestUserDelete(BaseCase):
         )
 
     # Позитивный тест на удаление пользователя
+    @allure.feature("Позитивные тесты")
+    @allure.description("This test checks delete user successful")
+    @allure.severity(allure.severity_level.TRIVIAL)
     def test_delete_user_successful(self):
 
         self.data = self.prepare_registration_data()
@@ -81,6 +89,9 @@ class TestUserDelete(BaseCase):
         assert response4.text == "User not found", "Wrong after delete user"
 
     # Пробуем удалить пользователя, будучи авторизованными другим пользователем.
+    @allure.feature("Негативные тесты")
+    @allure.description("This test checks delete another user is impossible")
+    @allure.severity(allure.severity_level.NORMAL)
     def test_negative_delete_user(self):
         response1 = MyRequests.post("/user/", data=self.data)  # зарегали первого пользователя
         response2 = MyRequests.post("/user/", data=self.data2)  # зарегали второго пользователя
